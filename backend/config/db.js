@@ -1,16 +1,21 @@
-const mongoose = require('mongoose');
+const mysql = require('mysql2');
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect('mongodb://localhost:27017/Authpages', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    console.log('MongoDB Connected...');
-  } catch (err) {
-    console.error(err.message);
-    process.exit(1);
-  }
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'Vashwin@123',
+  database: 'authpages'
+});
+
+const connectDB = () => {
+  db.connect((err) => {
+    if (err) {
+      console.error('Unable to connect to the database:', err.message);
+      process.exit(1);
+    } else {
+      console.log('MySQL Connected...');
+    }
+  });
 };
 
-module.exports = connectDB;
+module.exports = { db, connectDB };

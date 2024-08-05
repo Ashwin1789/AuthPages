@@ -1,31 +1,27 @@
-const mongoose = require('mongoose');
+const db = require('../config/db').db;
 const bcrypt = require('bcryptjs');
 
-const UserSchema = new mongoose.Schema({
-  fullName: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true
-  }
-});
-
-UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
+const createUser = async (user) => {
   const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
+  const hashedPassword = await bcrypt.hash(user.password, salt);
 
-const User = mongoose.model('User', UserSchema);
+  return new Promise((resolve, reject) => {
+    const sql = 'INSERT INTO Users (fullName, email, password) VALUES (?, ?, ?)';
+    db.query(sql, [user.fullName, user.email, hashedPassword], (err, result) => {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
+};
 
-module.exports = User;
+const findUserByEmail = (email) => {
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT * FROM Users WHERE email = ?';
+    db.query(sql, [email], (err, result) => {
+      if (err) return reject(err);
+      resolve(result[0]);
+    });
+  });
+};
+
+module.exports = { createUser, findUserByEmail };

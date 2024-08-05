@@ -1,4 +1,4 @@
-const User = require('../models/userModel');
+const { createUser, findUserByEmail } = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const validator = require('../utils/validator');
@@ -11,13 +11,12 @@ const signUp = async (req, res) => {
   }
 
   try {
-    let user = await User.findOne({ email });
+    const user = await findUserByEmail(email);
     if (user) {
       return res.status(400).json({ msg: 'Email already exists' });
     }
 
-    user = new User({ fullName, email, password });
-    await user.save();
+    await createUser({ fullName, email, password });
     res.status(201).json({ msg: 'User created' });
   } catch (err) {
     console.error(err.message);
@@ -29,7 +28,7 @@ const signIn = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    const user = await findUserByEmail(email);
     if (!user) {
       return res.status(400).json({ msg: 'Invalid email or password' });
     }
